@@ -1,0 +1,25 @@
+#!/usr/bin/perl -w
+use strict;
+use AnyEvent;
+use Net::Amazon::EC2;
+use CloudCTL ':all';
+use Log::Log4perl;
+use Getopt::Long;
+
+my $config      = "ec2.conf";
+my $logconfig   = "log.conf";
+
+GetOptions("config=s"    => \$config,
+           "logconfig=s" => \$logconfig) or exit 1;
+if (-e $logconfig) {
+    Log::Log4perl::init_and_watch($logconfig, 60);
+}
+else {
+    Log::Log4perl->easy_init();
+}
+
+my $name = shift or die "must specify name";
+
+CloudCTL->load($config, $name);
+
+my ($instance, $new) = ensure_idp_instance($name);
